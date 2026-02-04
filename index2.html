@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GB Chamada - Gestão Completa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           CSS GLOBAL & TEMA GB
+           ========================================= */
+        :root {
+            --gb-red: #D32F2F; --gb-red-dark: #B71C1C;
+            --bg-body: #F5F5F7; --bg-panel: #FFFFFF;
+            --text-main: #111111; --text-muted: #666666;
+            --border: #E0E0E0; --success: #2E7D32;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        aside { width: 260px; background-color: var(--bg-panel); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 2px 0 10px rgba(0,0,0,0.05); z-index: 10; }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 0.8rem; letter-spacing: -0.5px; }
+        .logo-triangle { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 20px solid var(--gb-red); }
+        .logo span { color: var(--gb-red); }
+        nav button { background: none; border: none; color: var(--text-muted); width: 100%; text-align: left; padding: 0.85rem 1rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
+        nav button:hover { background-color: #F5F5F5; color: var(--text-main); }
+        nav button.active { background-color: var(--gb-red); color: white; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3); }
+
+        /* Main Content */
+        main { flex: 1; padding: 2.5rem; overflow-y: auto; }
+        h2 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .subtitle { color: var(--text-muted); margin-bottom: 2.5rem; font-size: 1.1rem; }
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- NOVO: Seletor de Aula --- */
+        .class-selector-container {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .class-selector-label {
+            display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;
+        }
+        .class-select {
+            width: 100%; padding: 0.8rem; font-size: 1rem; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-weight: 600; color: var(--text-main); background: #f9f9f9;
+        }
+        .class-select:focus { outline: none; border-color: var(--gb-red); background: #fff; }
+
+        /* Scanner */
+        .scanner-card { background: var(--bg-panel); border: 3px dashed var(--border); border-radius: 12px; padding: 4rem 2rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .scanner-card:hover { border-color: var(--gb-red); background: #FFF5F5; }
+        .scanner-icon { font-size: 3.5rem; margin-bottom: 1.5rem; color: var(--gb-red); opacity: 0.8; }
+        .btn-action { background-color: var(--gb-red); color: white; padding: 1rem 2.5rem; border-radius: 6px; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 2rem; text-transform: uppercase; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4); transition: background-color 0.2s; width: 100%; }
+        .btn-action:hover { background-color: var(--gb-red-dark); }
+        .btn-action:disabled { background-color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+
+        /* Students List */
+        .students-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .week-display { background: #fff; padding: 0.5rem 1rem; border-radius: 20px; border: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
+        .week-display span { color: var(--gb-red); }
+        .btn-add { background-color: var(--bg-panel); border: 2px solid var(--border); color: var(--text-main); padding: 0.7rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-add:hover { border-color: var(--gb-red); color: var(--gb-red); }
+
+        .student-row { background-color: var(--bg-panel); border-radius: 8px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.03); transition: all 0.2s; cursor: pointer; }
+        .student-row:hover { border-color: var(--gb-red); transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .student-info { display: flex; align-items: center; gap: 1.2rem; width: 40%; }
+        
+        /* Avatar Logic */
+        .avatar { width: 50px; height: 50px; background-color: var(--gb-red); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; flex-shrink: 0; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; } /* Imagem preenche a bolinha */
+        
+        .student-name { font-weight: 700; font-size: 1.05rem; display: block; margin-bottom: 4px;}
+
+        /* Visual Belt */
+        .belt-visual { display: flex; align-items: center; width: 130px; height: 18px; background-color: #eee; border-radius: 2px; position: relative; box-shadow: 0 1px 3px rgba(0,0,0,0.2); overflow: hidden; }
+        .belt-visual.branca { background-color: #F5F5F5; border: 1px solid #ddd; }
+        .belt-visual.azul   { background-color: #1E88E5; }
+        .belt-visual.roxa   { background-color: #7B1FA2; }
+        .belt-visual.marrom { background-color: #5D4037; }
+        .belt-visual.preta  { background-color: #212121; }
+        .belt-sleeve { margin-left: auto; width: 45px; height: 100%; background-color: #000; display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; gap: 3px; }
+        .belt-visual.preta .belt-sleeve { background-color: #D32F2F; }
+        .belt-stripe { width: 4px; height: 100%; background-color: white; box-shadow: 1px 0 2px rgba(0,0,0,0.3); }
+
+        .week-tracker { display: flex; gap: 0.8rem; align-items: center; }
+        .day-col { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; position: relative;}
+        .day-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
+        .status-dot { width: 14px; height: 14px; border-radius: 4px; background-color: #E0E0E0; position: relative; }
+        .status-dot.present { background-color: var(--success); box-shadow: 0 0 6px rgba(46, 125, 50, 0.5); }
+        .status-dot.graduation { background-color: var(--gb-red); box-shadow: 0 0 8px rgba(211, 47, 47, 0.6); animation: pulse 2s infinite; }
+        .status-dot.graduation::after { content: ''; position: absolute; top: -4px; right: -4px; width: 6px; height: 6px; background: gold; border-radius: 50%; border: 1px solid white; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
+        .modal.open { display: flex; }
+        .modal-content { background: var(--bg-panel); padding: 2.5rem; border-radius: 12px; width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; max-height: 90vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .student-detail-header { text-align: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; }
+        .detail-avatar { width: 100px; height: 100px; background: var(--gb-red); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; margin: 0 auto 1rem auto; box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3); overflow: hidden;}
+        .detail-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-name { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.2rem;}
+        .detail-belt { font-size: 1rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 1px;}
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .info-item label { display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; font-weight: 700;}
+        .info-item span { font-size: 1rem; font-weight: 600; color: var(--text-main); }
+        .highlight-date { color: var(--gb-red) !important; }
+        .stripes-container { display: flex; justify-content: center; gap: 5px; margin-top: 0.5rem; }
+        .stripe-box { width: 15px; height: 40px; background-color: #e0e0e0; border: 1px solid #ccc; }
+        .stripe-box.active { background-color: white; border: 1px solid black; box-shadow: 0 0 2px rgba(0,0,0,0.5);} 
+        .history-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 1rem; }
+        .history-day { width: 100%; aspect-ratio: 1; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #aaa; }
+        .history-day.present { background: var(--success); color: white; font-weight: bold; }
+        .history-day.graduation { background: var(--gb-red); color: white; font-weight: bold; border: 2px solid gold; }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            aside { width: 100%; position: fixed; bottom: 0; left: 0; border-right: none; border-top: 1px solid var(--border); padding: 8px 16px; flex-direction: row; justify-content: space-around; background: var(--bg-panel); z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+            aside .logo { display: none; }
+            aside nav { display: flex; width: 100%; justify-content: space-around; gap: 0; }
+            aside nav button { flex-direction: column; gap: 4px; font-size: 0.7rem; padding: 8px; }
+            aside nav button span { font-size: 1.4rem !important; }
+            main { padding: 1rem; padding-bottom: 90px; width: 100%; }
+            .scanner-card { padding: 2rem 1rem; }
+            .student-row { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1rem; }
+            .student-info { width: 100%; margin-bottom: 5px; }
+            .week-tracker { width: 100%; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 6px; }
+            .modal-content { width: 95%; max-height: 85vh; padding: 1.5rem; }
+            .info-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .students-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .btn-add { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="logo"><div class="logo-triangle"></div>GB<span>CHAMADA</span></div>
+        <nav>
+            <button class="active" onclick="switchView('home', this)"><span style="font-size: 1.2rem">🥋</span> Área do Tatame</button>
+            <button onclick="switchView('students', this)"><span style="font-size: 1.2rem">👥</span> Alunos</button>
+        </nav>
+    </aside>
+
+    <main>
+        <div id="view-home" class="view-section active">
+            <h2>Chamada do Treino</h2>
+            <p class="subtitle">Selecione o treino e registre a presença.</p>
+            
+            <div class="class-selector-container">
+                <label class="class-selector-label">Selecione o Horário do Treino</label>
+                <select id="classSelect" class="class-select">
+                    <option value="" disabled selected>Escolha uma opção...</option>
+                    <option value="6:10">GB1/GB2/GB3 - 06:10</option>
+                    <option value="12:00">GB1/GB2/GB3 - 12h00</option>
+                    <option value="19:30">GB1/GB2/GB3 - 19h30</option>
+                    <option value="20:30">GB2/GB3 (NoGi) - 20h30</option>
+                </select>
+            </div>
+
+            <div class="scanner-card" id="dropZone">
+                <div class="scanner-icon">📸</div>
+                <h3>Arraste a foto da turma aqui</h3>
+                <input type="file" id="inputPresence" accept="image/*" style="display: none;">
+            </div>
+            <button class="btn-action" id="btnProcessPresence" style="width: 100%;" disabled>Confirmar Presença</button>
+        </div>
+
+        <div id="view-students" class="view-section">
+            <div class="students-header">
+                <h2>Alunos Matriculados</h2>
+                <button class="btn-add" onclick="openRegisterModal()">+ MATRICULAR ALUNO</button>
+            </div>
+            <div class="week-display" id="weekDisplay"></div>
+            <div id="studentsList"></div>
+        </div>
+    </main>
+
+    <div class="modal" id="modalStudentDetail">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modalStudentDetail')">&times;</button>
+            <div class="student-detail-header">
+                <div class="detail-avatar" id="detailAvatar"></div>
+                <div class="detail-name" id="detailName"></div>
+                <div class="detail-belt" id="detailBelt"></div>
+                <div class="stripes-container" id="detailStripesVisual"></div>
+            </div>
+            <div class="info-grid">
+                <div class="info-item"><label>Data de Nascimento</label><span id="detailDob"></span></div>
+                <div class="info-item"><label>Idade</label><span id="detailAge"></span></div>
+                <div class="info-item"><label>Último Grau</label><span id="detailLastStripe"></span></div>
+                <div class="info-item"><label>Próximo Grau (Previsto)</label><span id="detailNextStripe" class="highlight-date"></span></div>
+                <div class="info-item"><label>Última Troca de Faixa</label><span id="detailLastBelt"></span></div>
+                <div class="info-item"><label>Próxima Faixa (Previsto)</label><span id="detailNextBelt" class="highlight-date"></span></div>
+            </div>
+            <button class="btn-action" onclick="openHistoryModal()" style="width:100%; margin-top:0; font-size: 0.9rem; padding: 0.8rem;">Ver Histórico de Presenças</button>
+        </div>
+    </div>
+
+    <div class="modal" id="modalHistory">
+        <div class="modal-content" style="width: 400px;">
+            <button class="close-modal" onclick="closeModal('modalHistory')">&times;</button>
+            <h3>Histórico de Treinos</h3>
+            <p style="color:var(--text-muted); margin-bottom:1rem;">Janeiro / Fevereiro 2026</p>
+            <div class="history-grid" id="historyGrid"></div>
+            <div style="margin-top:1rem; display:flex; gap:1rem; font-size:0.8rem; color:var(--text-muted);">
+                <div style="display:flex; align-items:center; gap:5px;"><div style="width:10px; height:10px; background:var(--success);"></div> Presente</div>
+                <div style="display:flex; align-items:center; gap:5px;"><div style="width:10px; height:10px; background:var(--gb-red);"></div> Graduação</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modalRegister">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('modalRegister')">&times;</button>
+            <h3>NOVA MATRÍCULA</h3>
+            <div style="margin-top: 1rem;">
+                <label style="font-size: 0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Nome Completo</label>
+                <input type="text" id="newStudentName" placeholder="Ex: João Silva" style="width:100%; padding:0.8rem; margin-bottom:1rem;">
+                
+                <label style="font-size: 0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Faixa</label>
+                <select id="newStudentBelt" style="width:100%; padding:0.8rem; margin-bottom:1rem;">
+                    <option value="Branca">Branca</option>
+                    <option value="Azul">Azul</option>
+                    <option value="Roxa">Roxa</option>
+                    <option value="Marrom">Marrom</option>
+                    <option value="Preta">Preta</option>
+                </select>
+
+                <label style="font-size: 0.8rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.3rem;">Foto do Aluno</label>
+                <input type="file" id="newStudentPhoto" accept="image/*" style="width:100%; padding:0.5rem; margin-bottom:1rem; background:#f9f9f9; border:1px solid var(--border); border-radius:4px;">
+
+                <button class="btn-action" onclick="saveNewStudent()" style="width:100%; margin:0;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DADOS MOCKADOS
+        let studentsData = [
+            { 
+                id: 1, 
+                name: 'Guilherme Silva', 
+                dob: '1995-05-20', 
+                belt: 'Branca', 
+                stripes: 2, 
+                lastStripeDate: '2025-10-15', 
+                lastBeltDate: '2025-01-10', 
+                week: [1, 1, 0, 0, 1, 0, 0] 
+            },
+            { 
+                id: 2, 
+                name: 'Lucas Pereira', 
+                dob: '1988-11-02', 
+                belt: 'Azul', 
+                stripes: 4, 
+                lastStripeDate: '2025-08-01', 
+                lastBeltDate: '2023-06-15', 
+                week: [1, 1, 1, 0, 1, 0, 0] 
+            },
+            { 
+                id: 3, 
+                name: 'Livia Casca Grossa', 
+                dob: '2000-03-10', 
+                belt: 'Roxa', 
+                stripes: 0, 
+                lastStripeDate: '2025-01-20', 
+                lastBeltDate: '2025-01-20', 
+                week: [0, 1, 0, 1, 0, 0, 0] 
+            },
+            // --- NOVOS ALUNOS ---
+            { 
+                id: 4, 
+                name: 'Fernanda Oliveira', 
+                dob: '1992-07-15', 
+                belt: 'Azul', 
+                stripes: 2, 
+                lastStripeDate: '2025-09-10', 
+                lastBeltDate: '2024-02-01', 
+                week: [1, 0, 1, 1, 0, 1, 0] 
+            },
+            { 
+                id: 5, 
+                name: 'Roberto "Tanque" Almeida', 
+                dob: '1985-04-30', 
+                belt: 'Marrom', 
+                stripes: 1, 
+                lastStripeDate: '2025-11-05', 
+                lastBeltDate: '2022-08-20', 
+                week: [1, 1, 1, 1, 1, 0, 0] // Aluno exemplar
+            },
+            { 
+                id: 6, 
+                name: 'Juliana Taz Mania', 
+                dob: '1998-12-12', 
+                belt: 'Branca', 
+                stripes: 4, 
+                lastStripeDate: '2025-06-01', 
+                lastBeltDate: '2024-01-15', 
+                week: [1, 1, 0, 0, 3, 0, 0] // <--- Sexta (índice 4) é GRADUAÇÃO (código 3)!
+            },
+            { 
+                id: 7, 
+                name: 'Mestrão', 
+                dob: '1979-02-25', 
+                belt: 'Preta', 
+                stripes: 6, 
+                lastStripeDate: '2023-05-10', 
+                lastBeltDate: '2018-01-01', 
+                week: [1, 1, 1, 1, 1, 1, 0] 
+            },
+            { 
+                id: 8, 
+                name: 'Patrícia Lima', 
+                dob: '2001-09-08', 
+                belt: 'Roxa', 
+                stripes: 3, 
+                lastStripeDate: '2025-07-20', 
+                lastBeltDate: '2023-11-10', 
+                week: [1, 0, 0, 0, 0, 0, 0] // Faltou a semana toda quase
+            },
+            { 
+                id: 9, 
+                name: 'Diego Rocha', 
+                dob: '1990-06-14', 
+                belt: 'Branca', 
+                stripes: 0, // Novato total
+                lastStripeDate: '2026-02-01', 
+                lastBeltDate: '2026-02-01', 
+                week: [1, 1, 1, 0, 0, 3, 0] 
+            },
+            { 
+                id: 10, 
+                name: 'Diego Guarda Frouxa', 
+                dob: '1990-06-14', 
+                belt: 'Branca', 
+                stripes: 0, // Novato total
+                lastStripeDate: '2026-02-01', 
+                lastBeltDate: '2026-02-01', 
+                week: [1, 1, 1, 0, 0, 0, 0] 
+            },
+            { 
+                id: 10, 
+                name: 'Rafael Bigorna', 
+                dob: '1990-06-14', 
+                belt: 'Branca', 
+                stripes: 0, // Novato total
+                lastStripeDate: '2026-02-01', 
+                lastBeltDate: '2026-02-01', 
+                week: [1, 1, 1, 0, 3, 0, 0] 
+            }
+        ];
+
+        const BELT_RULES = {
+            'Branca': { monthsPerStripe: 4, minMonthsToNextBelt: 24, nextBelt: 'Azul' },
+            'Azul':   { monthsPerStripe: 6, minMonthsToNextBelt: 24, nextBelt: 'Roxa' },
+            'Roxa':   { monthsPerStripe: 6, minMonthsToNextBelt: 24, nextBelt: 'Marrom' },
+            'Marrom': { monthsPerStripe: 8, minMonthsToNextBelt: 12, nextBelt: 'Preta' },
+            'Preta':  { monthsPerStripe: 36, minMonthsToNextBelt: 36, nextBelt: 'Coral' } 
+        };
+        const days = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+
+        function renderStudents() {
+            const list = document.getElementById('studentsList');
+            list.innerHTML = '';
+
+            studentsData.forEach(student => {
+                const initials = student.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                const beltColorClass = student.belt.toLowerCase();
+
+                // LÓGICA DA FOTO: Se tiver URL de foto, usa <img>, senão usa iniciais
+                let avatarHtml = initials;
+                if (student.photoUrl) {
+                    avatarHtml = `<img src="${student.photoUrl}" alt="${student.name}">`;
+                }
+
+                let stripesHtml = '';
+                for(let i=0; i<student.stripes; i++) stripesHtml += `<div class="belt-stripe"></div>`;
+
+                let weekHtml = '';
+                student.week.forEach((status, index) => {
+                    let statusClass = '';
+                    let title = days[index];
+                    if (status === 1) statusClass = 'present';
+                    if (status === 3) { statusClass = 'graduation'; title = "Graduação!"; }
+                    weekHtml += `
+                        <div class="day-col">
+                            <span class="day-label">${days[index]}</span>
+                            <div class="status-dot ${statusClass}" title="${title}"></div>
+                        </div>`;
+                });
+
+                const html = `
+                    <div class="student-row" onclick="openStudentDetails(${student.id})">
+                        <div class="student-info">
+                            <div class="avatar">${avatarHtml}</div>
+                            <div>
+                                <div class="student-name">${student.name}</div>
+                                <div class="belt-visual ${beltColorClass}">
+                                    <div class="belt-sleeve">${stripesHtml}</div>
+                                </div> 
+                            </div>
+                        </div>
+                        <div class="week-tracker">${weekHtml}</div>
+                    </div>
+                `;
+                list.innerHTML += html;
+            });
+        }
+
+        // --- SALVAR NOVO ALUNO (COM FOTO) ---
+        function saveNewStudent() {
+            const name = document.getElementById('newStudentName').value;
+            const belt = document.getElementById('newStudentBelt').value;
+            const photoInput = document.getElementById('newStudentPhoto');
+
+            if(!name) return alert("Digite um nome!");
+
+            let photoUrl = null;
+            if (photoInput.files && photoInput.files[0]) {
+                // Cria uma URL temporária para a imagem carregada
+                photoUrl = URL.createObjectURL(photoInput.files[0]);
+            }
+
+            const newId = studentsData.length + 1;
+            const newStudent = {
+                id: newId,
+                name: name,
+                dob: '1990-01-01',
+                belt: belt,
+                stripes: 0,
+                lastStripeDate: '2025-01-01',
+                lastBeltDate: '2025-01-01',
+                week: [0, 0, 0, 0, 0, 0, 0],
+                photoUrl: photoUrl // Salva a URL da foto
+            };
+
+            studentsData.push(newStudent);
+            renderStudents();
+            closeModal('modalRegister');
+            
+            // Limpa campos
+            document.getElementById('newStudentName').value = '';
+            document.getElementById('newStudentPhoto').value = '';
+
+            const btnStudents = document.querySelectorAll('nav button')[1];
+            switchView('students', btnStudents);
+        }
+
+        function openStudentDetails(id) {
+            const student = studentsData.find(s => s.id === id);
+            if(!student) return;
+
+            // Foto no Modal
+            const avatarEl = document.getElementById('detailAvatar');
+            const initials = student.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+            
+            if (student.photoUrl) {
+                avatarEl.innerHTML = `<img src="${student.photoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            } else {
+                avatarEl.textContent = initials;
+            }
+
+            document.getElementById('detailName').textContent = student.name;
+            document.getElementById('detailBelt').innerHTML = `${student.belt} <span style="color:#666">(${student.stripes}º Grau)</span>`;
+            document.getElementById('detailDob').textContent = new Date(student.dob).toLocaleDateString('pt-BR');
+            
+            const age = Math.abs(new Date(Date.now() - new Date(student.dob).getTime()).getUTCFullYear() - 1970);
+            document.getElementById('detailAge').textContent = age + " anos";
+
+            document.getElementById('detailLastStripe').textContent = new Date(student.lastStripeDate).toLocaleDateString('pt-BR');
+            document.getElementById('detailLastBelt').textContent = student.belt === 'Branca' ? "—" : new Date(student.lastBeltDate).toLocaleDateString('pt-BR');
+
+            const rules = BELT_RULES[student.belt];
+            const nextStripe = new Date(student.lastStripeDate); nextStripe.setMonth(nextStripe.getMonth() + rules.monthsPerStripe);
+            const nextBelt = new Date(student.lastBeltDate); nextBelt.setMonth(nextBelt.getMonth() + rules.minMonthsToNextBelt);
+
+            document.getElementById('detailNextStripe').textContent = nextStripe.toLocaleDateString('pt-BR');
+            document.getElementById('detailNextBelt').textContent = nextBelt.toLocaleDateString('pt-BR') + ` (para ${rules.nextBelt})`;
+
+            const stripesContainer = document.getElementById('detailStripesVisual');
+            stripesContainer.innerHTML = '';
+            for(let i=1; i<=4; i++) {
+                const isActive = i <= student.stripes ? 'active' : '';
+                stripesContainer.innerHTML += `<div class="stripe-box ${isActive}"></div>`;
+            }
+            document.getElementById('modalStudentDetail').classList.add('open');
+        }
+
+        // Validação da Presença
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('inputPresence');
+        const btnProcess = document.getElementById('btnProcessPresence');
+        const classSelect = document.getElementById('classSelect');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', checkPresenceReady);
+        classSelect.addEventListener('change', checkPresenceReady);
+
+        function checkPresenceReady() {
+            // Só libera o botão se tiver foto E tiver aula selecionada
+            if(fileInput.files.length && classSelect.value !== "") {
+                btnProcess.disabled = false;
+            } else {
+                btnProcess.disabled = true;
+            }
+        }
+
+        function updateWeekHeader() {
+            const today = new Date(); 
+            const weekNumber = Math.ceil((((today - new Date(today.getFullYear(), 0, 1)) / 86400000) + 1) / 7);
+            document.getElementById('weekDisplay').innerHTML = `📅 Semana ${weekNumber} • <span>02 fev - 08 fev 2026</span>`;
+        }
+        function openHistoryModal() {
+            const grid = document.getElementById('historyGrid');
+            grid.innerHTML = '';
+            for(let i=1; i<=30; i++) {
+                let cls = ''; const rand = Math.random();
+                if(rand > 0.8) cls = 'present'; if(i === 15) cls = 'graduation';
+                grid.innerHTML += `<div class="history-day ${cls}">${i}</div>`;
+            }
+            document.getElementById('modalHistory').classList.add('open');
+        }
+        function switchView(viewName, btn) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            btn.classList.add('active');
+        }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); }
+        function openRegisterModal() { document.getElementById('modalRegister').classList.add('open'); }
+
+        updateWeekHeader();
+        renderStudents();
+    </script>
+</body>
+</html>
